@@ -1,34 +1,32 @@
-# convert csv file to json file
-# input: command line args - path/to/file
-
 import csv
 import io
 import json
 import sys
 import os
 
-csvFile=sys.argv.pop()
-valid = os.path.isfile(csvFile)
-
-def convert():
+def convert(csvFile):
     lines=[]
     with open(csvFile, newline='') as f:
         reader = csv.reader(f)
-        cols = list(map(lambda c: c.replace(" ", "_"), reader.__next__()))
+        cols = reader.__next__()
         for row in reader:
             item = dict(zip(cols[1:], row[1:len(cols)]))
             lines.append(json.dumps(item))
 
-    outputFile = csvFile + '.json'
+    filename = os.path.splitext(csvFile)[0]
+    outputFile =  filename + '.json'
     jsonOutFile = io.open(outputFile, 'w', encoding="utf-8")
     output='[' + ','.join(lines) + ']'
     jsonOutFile.writelines(output)
     jsonOutFile.close()
 
 
+csvFile = sys.argv.pop()
+valid = os.path.isfile(csvFile)
+
 if(valid):
     print('convert file ' + csvFile + '...')
-    convert()
+    convert(csvFile)
     print('done')
 else:
     print(csvFile + ' is not valid file')
