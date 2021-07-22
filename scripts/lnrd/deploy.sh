@@ -19,16 +19,6 @@ getCurrentBranch() {
     echo "$result"
 }
 
-checkBranch() {
-  current="$(getCurrentBranch)"
-  local result=false
-  if [ "$current" = "$deploy_branch" ]
-  then
-    result=true
-  fi
-  echo "$result"
-}
-
 gitPull () {
   git fetch
   git pull origin $src_barnch
@@ -56,33 +46,20 @@ start() {
   echo "push done."
 }
 
-main() {
-  
-    cd $dist
-
-    if [ "$current_branch" != "$deploy_branch" ]
-    then
-        echo "current $current_branch -> change to $deploy_branch"
-        git checkout $deploy_branch
-    fi
-
-    current_branch=getCurrentBranch
-
-    if [ "$current_branch" = "$deploy_branch" ]
-    then
-        echo "start deploy"
-        #start
-        echo "deploy done."
-    else
-        echo "change branch to $deploy_branch fails..."
-    fi
+prepareBranch() {
+  current="$(getCurrentBranch)"
+  echo "push current changes ($current)"
+  git fetch
+  git pull origin
+  git add .
+  git commit -m "deploy-$(date)"
+  git push origin
+  echo "done."
+  if [ "$current" != "$deploy_branch" ]
+  then
+    # git checkout $deploy_branch
+    echo "checkout > $deploy_branch"
+  fi
 }
 
-check="$(checkBranch)"
-echo "check: $check"
-if [ $check ]
-then
-  echo "not in the right branch"
-else
-  echo "on board!"
-fi
+prepareBranch
