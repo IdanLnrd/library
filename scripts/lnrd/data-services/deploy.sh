@@ -24,6 +24,7 @@ uploadEnvFile() {
 }
 
 start() {
+  echo "=== START ==="
   current="$(getCurrentBranch)"
   echo "push current changes ($current)"
   git fetch
@@ -31,19 +32,30 @@ start() {
   git add .
   git commit -m "deploy-$(date)"
   git push origin
-  set -e
-  npm run build
-  echo "done."
+ 
   if [ "$current" != "$deploy_branch" ]
   then
     echo "checkout ($deploy_branch)"
     git checkout $deploy_branch
     git merge origin/$src_barnch
+  fi
+
+  current="$(getCurrentBranch)"
+   
+  if [ "$current" = "$deploy_branch" ]
+  then
+    set -e
     npm run build
     uploadEnvFile
     git push origin $deploy_branch
-    echo "done."
+    git checkout $current
+    echo "=== DONE ==="
+  else
+    echo "!!! Fail to checkout $deploy_branch"
   fi
+
+  echo "=== END ==="
+
 }
 
 start
